@@ -1,0 +1,18 @@
+$chromePath = "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
+$urlsFile = "C:\path\to\urls.txt"
+$pdfSavePath = "C:\path\to\save\pdfs"
+
+# Read URLs from text file
+$urls = Get-Content $urlsFile
+
+# Loop through each URL
+foreach ($url in $urls) {
+    # Check if the URL contains a certain string
+    if ($url -like "*example*") {
+        # Open URL in Chrome silently
+        Start-Process $chromePath -ArgumentList "--headless --disable-gpu --print-to-pdf=$pdfSavePath\$($url -replace '[^\w\d]', '').pdf" -NoNewWindow $url
+    }
+
+    # Add a delay to avoid overloading the system
+    Start-Sleep -Seconds 5
+}
