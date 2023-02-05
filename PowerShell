@@ -1,0 +1,27 @@
+$chromePath = "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
+$urlsFile = "C:\path\to\urls.txt"
+$jpegSavePath = "C:\path\to\save\jpegs"
+$pdfSavePath = "C:\path\to\save\pdfs"
+
+# Read URLs from text file
+$urls = Get-Content $urlsFile
+
+# Loop through each URL
+foreach ($url in $urls) {
+    $urlName = ($url -split '/')[-1]
+    # Open URL in Chrome silently
+    Start-Process $chromePath -ArgumentList "--headless --disable-gpu --screenshot=$jpegSavePath\$urlName.jpeg" -NoNewWindow $url
+    # Add a delay to avoid overloading the system
+    Start-Sleep -Seconds 5
+}
+
+# Convert all saved JPEGs to a combined PDF
+$jpegFiles = Get-ChildItem -Path $jpegSavePath -Filter "*.jpeg"
+$pdfDoc = New-Object -ComObject AcroExch.PDDoc
+foreach ($jpegFile in $jpegFiles) {
+    $jpeg = New-Object -ComObject AcroExch.Jpeg
+    $jpeg.Open($jpegFile.FullName)
+    $pdfDoc.InsertPages($pdfDoc.GetNumPages(), $jpeg, 1, 0)
+}
+$pdfDoc.Save(1, "$pdfSavePath\combined.pdf")
+$pdfDoc.Close()
